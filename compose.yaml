@@ -1,0 +1,30 @@
+services:
+  replicate:
+    image: replicate:0.0.1-SNAPSHOT
+    environment:
+      # OpenTelemetry configuration
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://grafana-lgtm:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAME=replicate
+      # Agent configuration
+      - OTEL_JAVAAGENT_ENABLED=true
+      - OTEL_JAVAAGENT_DEBUG=true
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - grafana-lgtm
+  
+  grafana-lgtm:
+    image: grafana/otel-lgtm
+    ports: # Grafana UI
+      - "3000:3000"
+      # OpenTelemetry gRPC endpoint
+      - "4317:4317"
+      # OpenTelemetry HTTP endpoint
+      - "4318:4318"
+    environment: # Allow anonymous access to the Grafana UI
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
